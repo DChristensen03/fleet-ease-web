@@ -56,6 +56,15 @@ export default function Component() {
 							Vehicles
 						</span>
 					</Dropdown.Item>
+					<Dropdown.Item as={Link} href="/management/drivers">
+						<span
+							className={`${
+								pathname === "/management/vehicles" ? "text-primary-700" : ""
+							} hover:text-primary-600`}
+						>
+							Drivers
+						</span>
+					</Dropdown.Item>
 					<Dropdown.Item as={Link} href="/management/maintenance">
 						<span
 							className={`${

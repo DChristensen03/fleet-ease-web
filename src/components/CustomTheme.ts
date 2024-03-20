@@ -10,6 +10,11 @@ const customTheme: CustomFlowbiteTheme = {
 			base: "hover:text-primary-600",
 		},
 	},
+	table: {
+		root: {
+			base: "dark:bg-gray-800",
+		},
+	},
 };
 
 export default customTheme;
