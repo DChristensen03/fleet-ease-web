@@ -37,7 +37,6 @@ export default function Drivers() {
 		setDrivers(updatedDrivers);
 	};
 
-	// TODO
 	const saveDriver = async (index, id) => {
 		const firstName = document.getElementById(`${index}-first`).value,
 			lastName = document.getElementById(`${index}-last`).value,
