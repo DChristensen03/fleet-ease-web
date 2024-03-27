@@ -1,5 +1,5 @@
 import { request } from "@/utils/universal";
-import { Button, Table, TextInput } from "flowbite-react";
+import { Button, Table, TextInput, Tooltip } from "flowbite-react";
 import { useState } from "react";
 import { HiChevronDown, HiChevronRight, HiPlus } from "react-icons/hi";
 
@@ -77,21 +77,40 @@ export default function AddDriver({ getDrivers }) {
 									id="age"
 									placeholder="Age..."
 									value={formValues.age}
-									onChange={(e) => setFormValues({ ...formValues, age: e.target.value })}
+									onChange={(e) =>
+										setFormValues({
+											...formValues,
+											age: e.target.value.replace(/\D/, ""),
+										})
+									}
 								></TextInput>
 							</Table.Cell>
 						</Table.Row>
 						<Table.Row>
 							<td className="w-5" />
 							<Table.Cell colSpan="5">
-								<Button
-									color="red"
-									className="float-right bg-red-600 text-white border-red-600 enabled:hover:bg-red-700 enabled:hover:border-red-700 focus:ring-red-700 font-bold"
-									onClick={addDriver}
-								>
-									Add&nbsp;
-									<HiPlus className="stroke-1" size="1.2em" />
-								</Button>
+								<div className="float-right">
+									<Tooltip
+										className={`w-max ${
+											formValues.age && formValues.firstName && formValues.lastName
+												? "hidden"
+												: ""
+										}`}
+										content="Age, first name, and last name are all required fields."
+									>
+										<Button
+											color="red"
+											className="float-right bg-red-600 text-white border-red-600 enabled:hover:bg-red-700 enabled:hover:border-red-700 focus:ring-red-700 font-bold"
+											onClick={addDriver}
+											disabled={
+												!(formValues.age && formValues.firstName && formValues.lastName)
+											}
+										>
+											Add&nbsp;
+											<HiPlus className="stroke-1" size="1.2em" />
+										</Button>
+									</Tooltip>
+								</div>
 							</Table.Cell>
 						</Table.Row>
 					</Table.Body>

@@ -3,7 +3,14 @@ import {
 	formatMaintenanceType,
 	getFormattedDate,
 } from "@/utils/universal";
-import { Button, Datepicker, Select, Table, Textarea } from "flowbite-react";
+import {
+	Button,
+	Datepicker,
+	Select,
+	Table,
+	Textarea,
+	Tooltip,
+} from "flowbite-react";
 import { useEffect, useState } from "react";
 import { HiChevronDown, HiChevronRight, HiPlus } from "react-icons/hi";
 import { types } from "../../../data/maintenancetypes.js";
@@ -132,14 +139,26 @@ export default function AddRecord({ getMaintenanceRecords }) {
 						<Table.Row>
 							<td className="w-5" />
 							<Table.Cell colSpan="5">
-								<Button
-									color="red"
-									className="float-right bg-red-600 text-white border-red-600 enabled:hover:bg-red-700 enabled:hover:border-red-700 focus:ring-red-700 font-bold"
-									onClick={addRecord}
-								>
-									Add&nbsp;
-									<HiPlus className="stroke-1" size="1.2em" />
-								</Button>
+								<div className="float-right">
+									<Tooltip
+										className={`w-max ${
+											formValues.carId && formValues.date && formValues.type
+												? "hidden"
+												: ""
+										}`}
+										content="A car, date, and maintenance type are all required fields."
+									>
+										<Button
+											color="red"
+											className="float-right bg-red-600 text-white border-red-600 enabled:hover:bg-red-700 enabled:hover:border-red-700 focus:ring-red-700 font-bold"
+											onClick={addRecord}
+											disabled={!(formValues.carId && formValues.date && formValues.type)}
+										>
+											Add&nbsp;
+											<HiPlus className="stroke-1" size="1.2em" />
+										</Button>
+									</Tooltip>
+								</div>
 							</Table.Cell>
 						</Table.Row>
 					</Table.Body>

@@ -115,7 +115,13 @@ export default function Vehicles() {
 										{!vehicle.editing ? (
 											vehicle.modelYear
 										) : (
-											<TextInput id={`${i}-year`} defaultValue={vehicle.modelYear} />
+											<TextInput
+												type="number"
+												step="1"
+												min="0"
+												id={`${i}-year`}
+												defaultValue={vehicle.modelYear}
+											/>
 										)}
 									</Table.Cell>
 									<Table.Cell>

@@ -1,5 +1,5 @@
 import { request } from "@/utils/universal";
-import { Button, Table, TextInput } from "flowbite-react";
+import { Button, Table, TextInput, Tooltip } from "flowbite-react";
 import { useState } from "react";
 import { HiChevronDown, HiChevronRight, HiPlus } from "react-icons/hi";
 
@@ -92,7 +92,10 @@ export default function AddVehicle({ getVehicles }) {
 									placeholder="Year..."
 									value={formValues.year}
 									onChange={(e) =>
-										setFormValues({ ...formValues, modelYear: e.target.value })
+										setFormValues({
+											...formValues,
+											modelYear: e.target.value.replace(/\D/, ""),
+										})
 									}
 								></TextInput>
 							</Table.Cell>
@@ -110,14 +113,36 @@ export default function AddVehicle({ getVehicles }) {
 						<Table.Row>
 							<td className="w-5" />
 							<Table.Cell colSpan="5">
-								<Button
-									color="red"
-									className="float-right bg-red-600 text-white border-red-600 enabled:hover:bg-red-700 enabled:hover:border-red-700 focus:ring-red-700 font-bold"
-									onClick={addVehicle}
-								>
-									Add&nbsp;
-									<HiPlus className="stroke-1" size="1.2em" />
-								</Button>
+								<div className="float-right">
+									<Tooltip
+										className={`w-max ${
+											formValues.color &&
+											formValues.make &&
+											formValues.model &&
+											formValues.modelYear
+												? "hidden"
+												: ""
+										}`}
+										content="Make, model, year, and color are all required fields."
+									>
+										<Button
+											color="red"
+											className="float-right bg-red-600 text-white border-red-600 enabled:hover:bg-red-700 enabled:hover:border-red-700 focus:ring-red-700 font-bold"
+											onClick={addVehicle}
+											disabled={
+												!(
+													formValues.color &&
+													formValues.make &&
+													formValues.model &&
+													formValues.modelYear
+												)
+											}
+										>
+											Add&nbsp;
+											<HiPlus className="stroke-1" size="1.2em" />
+										</Button>
+									</Tooltip>
+								</div>
 							</Table.Cell>
 						</Table.Row>
 					</Table.Body>
