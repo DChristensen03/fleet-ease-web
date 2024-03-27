@@ -35,15 +35,13 @@ export default function Home() {
 							onMouseEnter={() => alterHoverState(page, true)}
 							onMouseLeave={() => alterHoverState(page, false)}
 						>
-							<div className="bg-white rounded">
-								<img
-									src={`/${page}.jpg`}
-									alt={page}
-									width="100%"
-									height="100%"
-									className="rounded opacity-90 dark:opacity-80"
-								/>
-							</div>
+							<img
+								src={`/${page}.jpg`}
+								alt={page}
+								width="100%"
+								height="100%"
+								className="rounded"
+							/>
 							<Badge
 								className="absolute bottom-3 right-1 w-3/4 min-h-12 h-1/5 max-h-32 place-content-center rounded-none"
 								size="lg"
