@@ -1,7 +1,10 @@
 "use client";
-import { Datepicker, Label, Select, Table } from "flowbite-react";
+import { Button, Datepicker, Label, Select, Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { areDatesEqual, getFormattedDate, request } from "@/utils/universal";
+import { HiTrash } from "react-icons/hi";
+import AddSchedule from "./AddSchedule";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 export default function Scheduling() {
 	const [vehicles, setVehicles] = useState([]);
@@ -11,6 +14,8 @@ export default function Scheduling() {
 		driverId: null,
 		date: getFormattedDate(new Date()),
 	});
+	const [modalOpen, setModalOpen] = useState(false);
+	const [deleteId, setDeleteId] = useState(0);
 
 	const [schedules, setSchedules] = useState([]);
 	const [dateSchedules, setDateSchedules] = useState([]);
@@ -32,26 +37,7 @@ export default function Scheduling() {
 					areDatesEqual(schedule.endTime, formValues.date)
 			)
 		);
-	}, [schedules]);
-
-	const checkTime = (time) => {
-		const hours = time.split(":")[0];
-		const minutes = time.split(":")[1];
-		const dateTime = new Date(formValues.date);
-		dateTime.setHours(hours);
-		dateTime.setMinutes(minutes);
-		console.log(dateSchedules);
-		dateSchedules.forEach((date) => {
-			const startTime = new Date(date.startTime);
-			const endTime = new Date(date.endTime);
-			if (endTime <= dateTime && dateTime >= startTime) {
-				console.log(dateTime);
-				return true;
-			} else {
-				return false;
-			}
-		});
-	};
+	}, [formValues.date, schedules]);
 
 	const getSchedules = async () => {
 		if (formValues.carId !== null && formValues.driverId !== null) {
@@ -60,6 +46,7 @@ export default function Scheduling() {
 			);
 			const results = await response.json();
 			setSchedules(results);
+			console.log(results);
 		}
 	};
 
@@ -77,9 +64,14 @@ export default function Scheduling() {
 		setDrivers(results);
 	};
 
+	const deleteSchedule = async (id) => {
+		setDeleteId(id);
+		setModalOpen(true);
+	};
+
 	return (
 		<main className="grid auto-rows-auto mx-5">
-			<div className="inline-flex w-full">
+			<div className="inline-flex w-full mb-1">
 				<h1 className="text-5xl text-center w-full font-bold italic">Scheduling</h1>
 			</div>
 			<div className="sm:w-full md:w-4/5 lg:w-3/5 place-self-center">
@@ -133,59 +125,64 @@ export default function Scheduling() {
 				</div>
 			</div>
 			<div className="sm:w-full md:w-4/5 lg:w-3/5 place-self-center my-5">
-				<Table className="table-auto text-black">
+				<Table className="w-full mb-4">
+					<Table.Head>
+						<Table.HeadCell>Vehicle</Table.HeadCell>
+						<Table.HeadCell>Driver</Table.HeadCell>
+						<Table.HeadCell>Start Time</Table.HeadCell>
+						<Table.HeadCell>End Time</Table.HeadCell>
+						<Table.HeadCell />
+					</Table.Head>
 					<Table.Body>
-						{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((time) => (
-							<>
-								<Table.Row>
-									<Table.Cell className="bg-slate-200">{time}:00</Table.Cell>
-									<Table.Cell
-										className={`w-2/5 ${
-											checkTime(`${time}:00`)
-												? "bg-slate-900"
-												: time % 2 == 0
-												? "bg-slate-50 hover:bg-slate-300 hover:border cursor-pointer"
-												: "bg-slate-100 hover:bg-slate-300 hover:border cursor-pointer"
-										}`}
-									></Table.Cell>
-									<Table.Cell className="bg-slate-200">{time + 12}:00</Table.Cell>
-									<Table.Cell
-										className={`w-2/5 ${
-											checkTime(`${time}:00`)
-												? "bg-slate-900"
-												: time % 2 == 1
-												? "bg-slate-50 hover:bg-slate-300 hover:border cursor-pointer"
-												: "bg-slate-100 hover:bg-slate-300 hover:border cursor-pointer"
-										}`}
-									></Table.Cell>
-								</Table.Row>
-								<Table.Row key={time}>
-									<Table.Cell className="bg-slate-200">{time}:30</Table.Cell>
-									<Table.Cell
-										className={`w-2/5 ${
-											checkTime(`${time}:30`)
-												? "bg-slate-900"
-												: time % 2 == 0
-												? "bg-slate-50 hover:bg-slate-300 hover:border cursor-pointer"
-												: "bg-slate-100 hover:bg-slate-300 hover:border cursor-pointer"
-										}`}
-									></Table.Cell>
-									<Table.Cell className="bg-slate-200">{time + 12}:30</Table.Cell>
-									<Table.Cell
-										className={`w-2/5 ${
-											checkTime(`${time}:30`)
-												? "bg-slate-900"
-												: time % 2 == 1
-												? "bg-slate-50 hover:bg-slate-300 hover:border cursor-pointer"
-												: "bg-slate-100 hover:bg-slate-300 hover:border cursor-pointer"
-										}`}
-									></Table.Cell>
-								</Table.Row>
-							</>
+						{dateSchedules.map((date) => (
+							<Table.Row key={date.id} className="text-center">
+								<Table.Cell>{`${date.car.make} ${date.car.model} ${date.car.trim}`}</Table.Cell>
+								<Table.Cell>{`${date.driver.firstName} ${date.driver.lastName}`}</Table.Cell>
+								<Table.Cell>
+									{new Date(date.startTime).getHours()}:
+									{new Date(date.startTime).getMinutes() === 0 ? "00" : "30"}
+								</Table.Cell>
+								<Table.Cell>
+									{new Date(date.endTime).getHours()}:
+									{new Date(date.endTime).getMinutes() === 0 ? "00" : "30"}
+								</Table.Cell>
+								<Table.Cell className="px-1">
+									<div className="inline-flex justify-center space-x-0.5 w-full">
+										<Button
+											color="red"
+											className="px-0 mx-0"
+											onClick={() => deleteSchedule(date.id)}
+										>
+											<HiTrash />
+										</Button>
+									</div>
+								</Table.Cell>
+							</Table.Row>
 						))}
+						<Table.Row>
+							<Table.Cell colSpan="6">
+								<AddSchedule
+									getSchedules={getSchedules}
+									vehicles={vehicles}
+									drivers={drivers}
+									dateSchedules={dateSchedules}
+									date={formValues.date}
+								/>
+							</Table.Cell>
+						</Table.Row>
 					</Table.Body>
 				</Table>
 			</div>
+			{modalOpen ? (
+				<ConfirmDeleteModal
+					id={deleteId}
+					modalOpen={modalOpen}
+					setModalOpen={setModalOpen}
+					getSchedules={getSchedules}
+				/>
+			) : (
+				""
+			)}
 		</main>
 	);
 }
