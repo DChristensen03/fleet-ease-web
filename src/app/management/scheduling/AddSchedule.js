@@ -6,84 +6,69 @@ import dayjs from "dayjs";
 
 export default function AddSchedule({
 	getSchedules,
-	vehicles,
-	drivers,
+	vehicleId,
+	driverId,
 	dateSchedules,
 	date,
 }) {
 	const [addRowOpen, setAddRowOpen] = useState(false);
 	const [formValues, setFormValues] = useState({
-		driverId: "0",
-		carId: "0",
 		startTime: "1:00",
 		endTime: "1:30",
 	});
 	const [validTime, setValidTime] = useState(false);
 
 	useEffect(() => {
-		formValues.driverId = drivers?.[0]?.id;
-		formValues.carId = vehicles?.[0]?.id;
-	}, [vehicles, drivers]);
+		validateTime();
+	});
 
 	useEffect(() => {
 		validateTime();
 	}, [formValues.startTime, formValues.endTime]);
 
 	const addRecord = async () => {
-		const splitDate = date.split("/");
-		const formattedDate = `${splitDate[2]}-${splitDate[0]}-${splitDate[1]}`;
-		const startTime = new Date(
-			`${formattedDate}T${
-				formValues.startTime > 9 ? formValues.startTime : "0" + formValues.startTime
-			}:00`
+		const startTime = dayjs(date)
+			.hour(formValues.startTime.split(":")[0])
+			.minute(formValues.startTime.split(":")[1]);
+		const endTime = dayjs(
+			dayjs(date)
+				.hour(formValues.endTime.split(":")[0])
+				.minute(formValues.endTime.split(":")[1])
 		);
-		const endTime = new Date(
-			`${formattedDate}T${
-				formValues.endTime > 9 ? formValues.endTime : "0" + formValues.endTime
-			}:00`
-		);
-		const response = await request(
-			`/schedules/${formValues.carId}/${formValues.driverId}`,
-			{
-				method: "Post",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					startTime,
-					endTime,
-				}),
-			}
-		);
+
+		const response = await request(`/schedules/${vehicleId}/${driverId}`, {
+			method: "Post",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				startTime,
+				endTime,
+			}),
+		});
 
 		if (response.ok) {
 			getSchedules();
 			setFormValues({
-				driverId: drivers?.[0]?.id,
-				carId: vehicles?.[0]?.id,
 				startTime: "1:00",
 				endTime: "1:30",
 			});
+			validateTime();
 		}
 	};
 
 	const validateTime = () => {
 		let result = true;
-		const splitDate = date.split("/");
-		const formattedDate = `${splitDate[2]}-${splitDate[0]}-${splitDate[1]}`;
-		// Format and create a JavaScript date
-		const startDateTime = new Date(
-			`${formattedDate}T${
-				formValues.startTime > 9 ? formValues.startTime : "0" + formValues.startTime
-			}:00`
-		);
-		const endDateTime = new Date(
-			`${formattedDate}T${
-				formValues.endTime > 9 ? formValues.endTime : "0" + formValues.endTime
-			}:00`
+		const startDateTime = dayjs(date)
+			.hour(formValues.startTime.split(":")[0])
+			.minute(formValues.startTime.split(":")[1]);
+		const endDateTime = dayjs(
+			dayjs(date)
+				.hour(formValues.endTime.split(":")[0])
+				.minute(formValues.endTime.split(":")[1])
 		);
 
 		dateSchedules.forEach((dateSchedule) => {
-			const startScheduleTime = new Date(dateSchedule.startTime);
-			const endScheduleTime = new Date(dateSchedule.endTime);
+			const startScheduleTime = dayjs(dateSchedule.startTime);
+			const endScheduleTime = dayjs(dateSchedule.endTime);
 			if (startDateTime <= startScheduleTime && startScheduleTime <= endDateTime)
 				result = false; // b starts in a
 			if (startDateTime <= endScheduleTime && endScheduleTime <= endDateTime)
@@ -121,41 +106,7 @@ export default function AddSchedule({
 							<td className="w-5" />
 							<Table.Cell className="px-2">
 								<Select
-									id="driver"
-									placeholder="Select a driver..."
-									value={formValues.driverId}
-									onChange={(e) =>
-										setFormValues({ ...formValues, driverId: e.target.value })
-									}
-								>
-									{drivers.map((driver) => (
-										<option
-											key={driver.id}
-											value={driver.id}
-										>{`${driver.firstName} ${driver.lastName}`}</option>
-									))}
-								</Select>
-							</Table.Cell>
-							<Table.Cell className="px-2">
-								<Select
-									id="car"
-									placeholder="Select a car..."
-									value={formValues.carId}
-									onChange={(e) =>
-										setFormValues({ ...formValues, carId: e.target.value })
-									}
-								>
-									{vehicles.map((vehicle) => (
-										<option
-											key={vehicle.id}
-											value={vehicle.id}
-										>{`${vehicle.make} ${vehicle.model} ${vehicle.trim}`}</option>
-									))}
-								</Select>
-							</Table.Cell>
-							<Table.Cell className="px-2">
-								<Select
-									id="maintenanceType"
+									id="timeFirst"
 									value={formValues.startTime}
 									onChange={(e) =>
 										setFormValues({ ...formValues, startTime: e.target.value })
@@ -185,7 +136,7 @@ export default function AddSchedule({
 							</Table.Cell>
 							<Table.Cell className="px-2">
 								<Select
-									id="maintenanceType"
+									id="timeSecond"
 									value={formValues.endTime}
 									onChange={(e) =>
 										setFormValues({ ...formValues, endTime: e.target.value })
@@ -212,9 +163,7 @@ export default function AddSchedule({
 								<div className="float-right">
 									<Tooltip
 										className={`w-max ${
-											formValues.carId && formValues.date && formValues.type
-												? "hidden"
-												: ""
+											driverId && vehicleId && validTime ? "hidden" : ""
 										}`}
 										content="A car, driver, and a start and end time not falling between any other scheduled times are all required."
 									>
@@ -222,7 +171,7 @@ export default function AddSchedule({
 											color="red"
 											className="float-right bg-red-600 text-white border-red-600 enabled:hover:bg-red-700 enabled:hover:border-red-700 focus:ring-red-700 font-bold"
 											onClick={addRecord}
-											disabled={!(formValues.driverId && formValues.carId && validTime)}
+											disabled={!(driverId && vehicleId && validTime)}
 										>
 											Add&nbsp;
 											<HiPlus className="stroke-1" size="1.2em" />

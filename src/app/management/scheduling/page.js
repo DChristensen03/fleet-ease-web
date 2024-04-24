@@ -163,8 +163,8 @@ export default function Scheduling() {
 							<Table.Cell colSpan="6">
 								<AddSchedule
 									getSchedules={getSchedules}
-									vehicles={vehicles}
-									drivers={drivers}
+									vehicleId={formValues.carId}
+									driverId={formValues.driverId}
 									dateSchedules={dateSchedules}
 									date={formValues.date}
 								/>
