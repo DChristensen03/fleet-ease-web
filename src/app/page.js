@@ -25,7 +25,7 @@ export default function Home() {
 				<span>Fleet</span>
 				<span className="underline text-primary-600">Ease</span>
 			</h1>
-			<div class="grid sm-grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 justify-start">
+			<div className="grid sm-grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 justify-start">
 				{pages.map((page) => (
 					<Link key={page} href={`/management/${page.toLowerCase()}`}>
 						<div

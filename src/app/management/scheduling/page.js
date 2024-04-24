@@ -1,7 +1,7 @@
 "use client";
-import { Label, Select, Table } from "flowbite-react";
+import { Datepicker, Label, Select, Table } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { request } from "@/utils/universal";
+import { areDatesEqual, getFormattedDate, request } from "@/utils/universal";
 
 export default function Scheduling() {
 	const [vehicles, setVehicles] = useState([]);
@@ -9,16 +9,59 @@ export default function Scheduling() {
 	const [formValues, setFormValues] = useState({
 		carId: null,
 		driverId: null,
+		date: getFormattedDate(new Date()),
+	});
+
+	const [schedules, setSchedules] = useState([]);
+	const [dateSchedules, setDateSchedules] = useState([]);
+
+	useEffect(() => {
+		if (vehicles.length === 0) getVehicles();
+		if (drivers.length === 0) getDrivers();
 	});
 
 	useEffect(() => {
-		getVehicles();
-		getDrivers();
-	}, []);
+		getSchedules();
+	}, [formValues.carId, formValues.driverId]);
 
 	useEffect(() => {
-		getSchedules();
-	}, [formValues]);
+		setDateSchedules(
+			schedules.filter(
+				(schedule) =>
+					areDatesEqual(schedule.startTime, formValues.date) ||
+					areDatesEqual(schedule.endTime, formValues.date)
+			)
+		);
+	}, [schedules]);
+
+	const checkTime = (time) => {
+		const hours = time.split(":")[0];
+		const minutes = time.split(":")[1];
+		const dateTime = new Date(formValues.date);
+		dateTime.setHours(hours);
+		dateTime.setMinutes(minutes);
+		console.log(dateSchedules);
+		dateSchedules.forEach((date) => {
+			const startTime = new Date(date.startTime);
+			const endTime = new Date(date.endTime);
+			if (endTime <= dateTime && dateTime >= startTime) {
+				console.log(dateTime);
+				return true;
+			} else {
+				return false;
+			}
+		});
+	};
+
+	const getSchedules = async () => {
+		if (formValues.carId !== null && formValues.driverId !== null) {
+			const response = await request(
+				`/schedules/${formValues.carId}/${formValues.driverId}`
+			);
+			const results = await response.json();
+			setSchedules(results);
+		}
+	};
 
 	const getVehicles = async () => {
 		const response = await request(`/cars`);
@@ -32,16 +75,6 @@ export default function Scheduling() {
 		const results = await response.json();
 		setFormValues({ ...formValues, driverId: results[0].id });
 		setDrivers(results);
-	};
-
-	const getSchedules = async () => {
-		if (formValues.carId !== null && formValues.driverId !== null) {
-			const response = await request(
-				`/schedules/${formValues.carId}/${formValues.driverId}`
-			);
-			const results = await response.json();
-			console.log(results);
-		}
 	};
 
 	return (
@@ -86,29 +119,69 @@ export default function Scheduling() {
 						))}
 					</Select>
 				</div>
+				<div className="inline-block ms-3">
+					<div className="mb-2 ms-1 block">
+						<Label htmlFor="vehicles" value="Select date" />
+					</div>
+					<Datepicker
+						id="date"
+						value={formValues.date}
+						onSelectedDateChanged={(e) =>
+							setFormValues({ ...formValues, date: getFormattedDate(e) })
+						}
+					/>
+				</div>
 			</div>
 			<div className="sm:w-full md:w-4/5 lg:w-3/5 place-self-center my-5">
 				<Table className="table-auto text-black">
 					<Table.Body>
-						{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((time) => (
-							<Table.Row key={time}>
-								<Table.Cell className="bg-slate-200">{time}:00</Table.Cell>
-								<Table.Cell
-									className={`w-2/5 ${
-										time % 2 == 0
-											? "bg-slate-50 hover:bg-slate-300 hover:border"
-											: "bg-slate-100 hover:bg-slate-300 hover:border"
-									}`}
-								></Table.Cell>
-								<Table.Cell className="bg-slate-200">{time + 12}:00</Table.Cell>
-								<Table.Cell
-									className={`w-2/5 ${
-										time % 2 == 1
-											? "bg-slate-50 hover:bg-slate-300 hover:border"
-											: "bg-slate-100 hover:bg-slate-300 hover:border"
-									}`}
-								></Table.Cell>
-							</Table.Row>
+						{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((time) => (
+							<>
+								<Table.Row>
+									<Table.Cell className="bg-slate-200">{time}:00</Table.Cell>
+									<Table.Cell
+										className={`w-2/5 ${
+											checkTime(`${time}:00`)
+												? "bg-slate-900"
+												: time % 2 == 0
+												? "bg-slate-50 hover:bg-slate-300 hover:border cursor-pointer"
+												: "bg-slate-100 hover:bg-slate-300 hover:border cursor-pointer"
+										}`}
+									></Table.Cell>
+									<Table.Cell className="bg-slate-200">{time + 12}:00</Table.Cell>
+									<Table.Cell
+										className={`w-2/5 ${
+											checkTime(`${time}:00`)
+												? "bg-slate-900"
+												: time % 2 == 1
+												? "bg-slate-50 hover:bg-slate-300 hover:border cursor-pointer"
+												: "bg-slate-100 hover:bg-slate-300 hover:border cursor-pointer"
+										}`}
+									></Table.Cell>
+								</Table.Row>
+								<Table.Row key={time}>
+									<Table.Cell className="bg-slate-200">{time}:30</Table.Cell>
+									<Table.Cell
+										className={`w-2/5 ${
+											checkTime(`${time}:30`)
+												? "bg-slate-900"
+												: time % 2 == 0
+												? "bg-slate-50 hover:bg-slate-300 hover:border cursor-pointer"
+												: "bg-slate-100 hover:bg-slate-300 hover:border cursor-pointer"
+										}`}
+									></Table.Cell>
+									<Table.Cell className="bg-slate-200">{time + 12}:30</Table.Cell>
+									<Table.Cell
+										className={`w-2/5 ${
+											checkTime(`${time}:30`)
+												? "bg-slate-900"
+												: time % 2 == 1
+												? "bg-slate-50 hover:bg-slate-300 hover:border cursor-pointer"
+												: "bg-slate-100 hover:bg-slate-300 hover:border cursor-pointer"
+										}`}
+									></Table.Cell>
+								</Table.Row>
+							</>
 						))}
 					</Table.Body>
 				</Table>
