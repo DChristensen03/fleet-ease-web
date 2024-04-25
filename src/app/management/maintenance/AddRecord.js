@@ -38,7 +38,6 @@ export default function AddRecord({ getMaintenanceRecords }) {
 	};
 
 	const addRecord = async () => {
-		console.log(formValues);
 		const response = await request(`/maintenancerecords/${formValues.carId}`, {
 			method: "Post",
 			headers: { "Content-Type": "application/json" },

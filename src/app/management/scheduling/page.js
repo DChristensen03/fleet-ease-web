@@ -46,7 +46,6 @@ export default function Scheduling() {
 			);
 			const results = await response.json();
 			setSchedules(results);
-			console.log(results);
 		}
 	};
 
@@ -134,31 +133,39 @@ export default function Scheduling() {
 						<Table.HeadCell />
 					</Table.Head>
 					<Table.Body>
-						{dateSchedules.map((date) => (
-							<Table.Row key={date.id} className="text-center">
-								<Table.Cell>{`${date.car.make} ${date.car.model} ${date.car.trim}`}</Table.Cell>
-								<Table.Cell>{`${date.driver.firstName} ${date.driver.lastName}`}</Table.Cell>
-								<Table.Cell>
-									{new Date(date.startTime).getHours()}:
-									{new Date(date.startTime).getMinutes() === 0 ? "00" : "30"}
-								</Table.Cell>
-								<Table.Cell>
-									{new Date(date.endTime).getHours()}:
-									{new Date(date.endTime).getMinutes() === 0 ? "00" : "30"}
-								</Table.Cell>
-								<Table.Cell className="px-1">
-									<div className="inline-flex justify-center space-x-0.5 w-full">
-										<Button
-											color="red"
-											className="px-0 mx-0"
-											onClick={() => deleteSchedule(date.id)}
-										>
-											<HiTrash />
-										</Button>
-									</div>
+						{dateSchedules.length > 0 ? (
+							dateSchedules.map((date) => (
+								<Table.Row key={date.id} className="text-center">
+									<Table.Cell>{`${date.car.make} ${date.car.model} ${date.car.trim}`}</Table.Cell>
+									<Table.Cell>{`${date.driver.firstName} ${date.driver.lastName}`}</Table.Cell>
+									<Table.Cell>
+										{new Date(date.startTime).getHours()}:
+										{new Date(date.startTime).getMinutes() === 0 ? "00" : "30"}
+									</Table.Cell>
+									<Table.Cell>
+										{new Date(date.endTime).getHours()}:
+										{new Date(date.endTime).getMinutes() === 0 ? "00" : "30"}
+									</Table.Cell>
+									<Table.Cell className="px-1">
+										<div className="inline-flex justify-center space-x-0.5 w-full">
+											<Button
+												color="red"
+												className="px-0 mx-0"
+												onClick={() => deleteSchedule(date.id)}
+											>
+												<HiTrash />
+											</Button>
+										</div>
+									</Table.Cell>
+								</Table.Row>
+							))
+						) : (
+							<Table.Row className="text-center">
+								<Table.Cell colSpan={5}>
+									Nothing scheduled for driver or vehicle on day
 								</Table.Cell>
 							</Table.Row>
-						))}
+						)}
 						<Table.Row>
 							<Table.Cell colSpan="6">
 								<AddSchedule
